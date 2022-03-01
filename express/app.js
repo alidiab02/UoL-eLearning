@@ -5,6 +5,12 @@ const db = require('./database');
 //Courses APIs
 const courseRoute = require('./routes/course');
 
+//Student APIs
+const studentRoute = require('./routes/student');
+
+//Teacher APIs
+const teacherRoute = require('./routes/teacher');
+
 //Middlewares
 const app = express();
 app.use(cookieParser());
@@ -126,11 +132,9 @@ app.get('/api/status', function (req, res) {
   });
 
 app.use('/api/courses',courseRoute)
-
+app.use('/api/student',studentRoute)
+app.use('/api/teacher',teacherRoute)
 
 //set environment parameter using terminal command for mac - Export PORT=3003
 const port = process.env.PORT || 3000
 app.listen(port,()=>console.log(`Listening on port ${port}`));
-
-
-
