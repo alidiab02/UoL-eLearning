@@ -11,7 +11,14 @@ function uuid() {
       var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
       return v.toString(16);
     });
-  }
+}
+
+//Check if the input is numeric
+function isNumeric(str) {
+    if (typeof str != "string") return false // we only process strings!
+    return !isNaN(str) && // use type coercion to parse the _entirety_ of the string (`parseFloat` alone does not do this)...
+           !isNaN(parseFloat(str)) // ...and ensure strings of whitespace fail
+}
 
 //validate if teacher exists
 async function userExists(userID) {
@@ -29,10 +36,78 @@ async function getUserRole(roleId){
 
 
 // Get all courses from the Database
-router.get('/', async (req, res) => {
+router.get('/',async (req, res) =>
+{
+    const { status,order,limit} = req.query;
+    const { requestorid } = req.headers;
+    let statusQuery = ""
+    if (status){
+        if (!(status==='1' | status==='0' )) {
+            console.log('in IF')
+            return res.status(400).json({
+                errorCode:'400-002',
+                errorMessage:`Invalid format or value`,
+                errorDetails:`Status valid values are 0,1 (0-Not available and 1-Available) `,
+                callId:uuid(),
+                requestUserId:`${requestorid}`,
+                apiVersion:`${apiVersion}`,
+                time:new Date()
+            })
+        } else {
+            if (status==='1' | status==='0'){
+                statusQuery = "WHERE isAvailable="+parseInt(status)
+            }
+        }
+    }
+    if (order){
+        if (!(order==='ASC' | order==='DESC')) {
+            return res.status(400).json({
+                errorCode:'400-002',
+                errorMessage:`Invalid format or value`,
+                errorDetails:`Order valid values are ASC and DESC (ASC - Ascending , DESC - Descending) `,
+                callId:uuid(),
+                requestUserId:`${requestorid}`,
+                apiVersion:`${apiVersion}`,
+                time:new Date()
+            })
+        } else{
+            orderQuery = `ORDER BY Title ${order}`
+            console.log(orderQuery)
+            if (statusQuery === ""){
+                statusQuery = "WHERE " + orderQuery
+            } else{
+                statusQuery = statusQuery + " " + orderQuery
+            }
+        }
+    }
+
+    if (limit){
+        if (!isNumeric(limit) | limit==='0'){
+            return res.status(400).json({
+                errorCode:'400-002',
+                errorMessage:`Invalid format or value`,
+                errorDetails:`Limit must be numeric and should be 1 or more`,
+                callId:uuid(),
+                requestUserId:`${requestorid}`,
+                apiVersion:`${apiVersion}`,
+                time:new Date()
+            })
+        } else {
+            limitQuery = `LIMIT ${parseInt(limit)}`
+            console.log(limitQuery)
+            if (statusQuery === ""){
+                statusQuery =  limitQuery
+            }
+            else {
+                statusQuery = statusQuery + " " + limitQuery
+            }
+        }
+    }
     //get all courses from the database
     try {
-        courses = await db.promise().query(`SELECT * FROM mydb.courses where isAvailable=0 LIMIT 5 `);
+        sql= `SELECT * FROM mydb.courses ${statusQuery}`
+        console.log(sql)
+        courses = await db.promise().query(sql);
         res.status(200).send(courses[0]);
         }
     catch (err){
