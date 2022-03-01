@@ -2,6 +2,8 @@
 // const {Router} = require('express');
 // const { append } = require('express/lib/response');
 
+const router = require("./course");
+
 // const db = require('../database.js');
 
 // const router = Router();
@@ -102,7 +104,7 @@
 //
 // database interactions -
 //
-// database interactions -
+// database POST interactions -
 // try {
 //   db.promise().query(`INSERT INTO Courses VALUES('${title}','${isAvailable}','${teacher}')`);
 //   res.status(200).send({msg:'Course added successfully'});
@@ -156,5 +158,30 @@
 //   res.status(200).json({msg: 'you are authorized.'})
 // })
 
-
+// No async call for post or put method.
+// router.post('/',(req,res)=> {
+//       const {username, password } =req.body;
+//       if (username&&password){
+//             try {
+//                   db.promise().query(`INSERT INTO Courses VALUES('${title}','${isAvailable}','${teacher}')`);
+//                   res.status(200).send({msg:'Course added successfully'});
+//                   }
+//             catch (err){
+//                   console.log(err);
+//             }
+//
+//       }
+// });
+// console.log("=====")
+// console.log(datetime);
+// console.log("=====")
+// console.log(new Date().toISOString().replace('T', ' ').substring(0, 19))
+// console.log("=====")
+// // other formats
+// console.log(new Date().toUTCString())
+// console.log("=====")
+// console.log(new Date().toLocaleString('en-US'))
+// console.log("=====")
+// console.log(new Date().toString())
+// console.log("=====")
 // module.exports = router;
