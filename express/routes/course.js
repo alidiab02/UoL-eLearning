@@ -35,8 +35,6 @@ async function getUserRole(roleId){
 }
 //Get All courses
 async function getAllCourses(query){
-    console.log("getAllCourses")
-    console.log(query)
     let courses= await db.promise().query(query);
     return await courses;
 }
@@ -51,12 +49,9 @@ router.get('/',async (req, res) =>
 {
     const { status,order,limit} = req.query;
     const { requestorid } = req.headers;
-    console.log("Inside course get")
-    console.log(status)
     let statusQuery = ""
     if (status){
         if (!(status==='1' | status==='0' )) {
-            console.log('in IF')
             return res.status(400).json({
                 errorCode:'400-002',
                 errorMessage:`Invalid format or value`,
@@ -85,7 +80,6 @@ router.get('/',async (req, res) =>
             })
         } else{
             orderQuery = `ORDER BY Title ${order}`
-            console.log(orderQuery)
             if (statusQuery === ""){
                 statusQuery =  orderQuery
             } else{
@@ -107,7 +101,6 @@ router.get('/',async (req, res) =>
             })
         } else {
             limitQuery = `LIMIT ${parseInt(limit)}`
-            console.log(limitQuery)
             if (statusQuery === ""){
                 statusQuery =  limitQuery
             }
