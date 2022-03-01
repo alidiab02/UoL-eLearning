@@ -51,7 +51,7 @@ app.use((req,res, next)=>{
                 }
                 urlArrayFinal = urlArray.split("/")
                 let url=""
-                for (let i = 0; i < 3; i++) {
+                for (let i = 0; i < 4; i++) {
                     url += urlArrayFinal[i] + "/";
                   }
                 // check the permission for the user role

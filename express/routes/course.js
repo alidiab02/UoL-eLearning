@@ -145,7 +145,7 @@ router.get('/',async (req, res) =>
   });
 
 // Method to assign a teacher to a course
-router.put('/:id/assignteacher',[ check('requestorid').isInt().withMessage('Requestor ID needs to be numeric.'),
+router.put('/assignteacher/:id',[ check('requestorid').isInt().withMessage('Requestor ID needs to be numeric.'),
                     check('id').isInt().withMessage('Course ID needs to be numeric.'),
                     check('teacherId').isInt().withMessage('Teacher ID needs to be numeric.'),
                 ],(req,res)=>
@@ -288,7 +288,7 @@ router.put('/:id/assignteacher',[ check('requestorid').isInt().withMessage('Requ
     });
 
 // Method to update enable or disable the availability of a course
-router.put('/:id/setstatus',[ check('requestorid').isInt().withMessage('Requestor ID needs to be numeric.'),
+router.put('/setstatus/:id',[ check('requestorid').isInt().withMessage('Requestor ID needs to be numeric.'),
                     check('isAvailable').isIn(['0','1']).withMessage('Valid values are 0 and 1 (0-Not available and 1-Available)'),
                     check('id').isInt().withMessage('Course ID needs to be numeric.'),
                 ],(req,res)=>
