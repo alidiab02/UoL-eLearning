@@ -143,72 +143,82 @@ router.put('/:id/assignteacher',[ check('requestorid').isInt().withMessage('Requ
                     (result)=> {
                         user = result[0]
                         if(user.length>0){
-                        getUserRole(user[0].RoleID).then(
-                            (result)=> {
-                                role = result[0]
-                                if(role[0].RoleID===2){
-                                    var sqlQuery=`UPDATE mydb.courses SET TeacherID = ${teacherId} WHERE CourseID=${id}`
-                                    console.log(sqlQuery)
-
-                                        db.query(sqlQuery,(err, result)=> {
-                                            if (err) {
-                                                console.log(err)
-                                                return res.status(500).json({
-                                                    errorCode:'500-002',
-                                                    errorMessage:`Database Connection Error`,
-                                                    errorDetails:err.array(),
-                                                    callId:uuid(),
-                                                    requestUserId:`${requestorid}`,
-                                                    apiVersion:`${apiVersion}`,
-                                                    time:new Date()
-                                                });
-                                            };
-                                            if (result.affectedRows===0){
-                                                res.status(400).send({
-                                                    errorCode:'400-001',
-                                                    errorMessage:`Object not found`,
-                                                    errorDetails:`${id} - Course not found.`,
-                                                    callId:uuid(),
-                                                    requestUserId:`${requestorid}`,
-                                                    apiVersion:`${apiVersion}`,
-                                                    time:new Date()
-                                                })
-                                            }else{
-                                                console.log(result.affectedRows + " record(s) updated");
-                                                res.status(200).send({
-                                                    errorCode:'000-000',
-                                                    callId:uuid(),
-                                                    requestUserId:`${requestorid}`,
-                                                    apiVersion:`${apiVersion}`,
-                                                    msg:`${id} - Course updated successfully.`,
-                                                    time:new Date()
-                                                });
-                                            }
-                                        });
-                                } else {
-                                    return res.status(400).json({
-                                        errorCode:'400-004',
-                                        errorMessage:`Role Error`,
-                                        errorDetails:`Cannot assign this user ${teacherId} to the course.`,
+                            getUserRole(user[0].RoleID).then(
+                                (result)=> {
+                                    role = result[0]
+                                    if(role.length>0){
+                                        if(role[0].RoleID===2){
+                                            var sqlQuery=`UPDATE mydb.courses SET TeacherID = ${teacherId} WHERE CourseID=${id}`
+                                            db.query(sqlQuery,(err, result)=> {
+                                                if (err) {
+                                                    console.log(err)
+                                                    return res.status(500).json({
+                                                        errorCode:'500-002',
+                                                        errorMessage:`Database Connection Error`,
+                                                        errorDetails:err.array(),
+                                                        callId:uuid(),
+                                                        requestUserId:`${requestorid}`,
+                                                        apiVersion:`${apiVersion}`,
+                                                        time:new Date()
+                                                    });
+                                                };
+                                                if (result.affectedRows===0){
+                                                    res.status(400).send({
+                                                        errorCode:'400-001',
+                                                        errorMessage:`Object not found`,
+                                                        errorDetails:`${id} - Course not found.`,
+                                                        callId:uuid(),
+                                                        requestUserId:`${requestorid}`,
+                                                        apiVersion:`${apiVersion}`,
+                                                        time:new Date()
+                                                    })
+                                                }else{
+                                                    console.log(result.affectedRows + " record(s) updated");
+                                                    res.status(200).send({
+                                                        errorCode:'000-000',
+                                                        callId:uuid(),
+                                                        requestUserId:`${requestorid}`,
+                                                        apiVersion:`${apiVersion}`,
+                                                        msg:`${id} - Course ${id} assigned to Teacher ${user[0].Name} successfully.`,
+                                                        time:new Date()
+                                                    });
+                                                }
+                                            });
+                                        } else {
+                                            return res.status(400).json({
+                                            errorCode:'400-004',
+                                            errorMessage:`Role Error`,
+                                            errorDetails:`Cannot assign this user ${teacherId} to the course.`,
+                                            callId:uuid(),
+                                            requestUserId:`${requestorid}`,
+                                            apiVersion:`${apiVersion}`,
+                                            time:new Date()
+                                            })
+                                        }
+                                    } else {
+                                        return res.status(400).json({
+                                            errorCode:'400-004',
+                                            errorMessage:`Role Error`,
+                                            errorDetails:`User ${teacherId} role not defined.`,
+                                            callId:uuid(),
+                                            requestUserId:`${requestorid}`,
+                                            apiVersion:`${apiVersion}`,
+                                            time:new Date()
+                                        })
+                                    }
+                                },
+                                (error)=>{
+                                    res.status(500).send({
+                                        errorCode:'500-001',
+                                        errorMessage:`Server Error`,
+                                        errorDetails:`${requestorid} - Internal Server Error.`,
                                         callId:uuid(),
                                         requestUserId:`${requestorid}`,
                                         apiVersion:`${apiVersion}`,
                                         time:new Date()
                                     })
-                                }
-                            },
-                            (error)=>{
-                                return res.status(400).json({
-                                    errorCode:'400-004',
-                                    errorMessage:`Role Error`,
-                                    errorDetails:`User ${teacherId} role not defined.`,
-                                    callId:uuid(),
-                                    requestUserId:`${requestorid}`,
-                                    apiVersion:`${apiVersion}`,
-                                    time:new Date()
-                                })
-                            },
-                        )
+                                },
+                            )
                         } else {
                             res.status(400).send({
                                 errorCode:'400-001',
@@ -222,10 +232,10 @@ router.put('/:id/assignteacher',[ check('requestorid').isInt().withMessage('Requ
                         }
                     },
                     (error)=>{
-                        res.status(400).send({
-                            errorCode:'400-001',
-                            errorMessage:`Object not found`,
-                            errorDetails:`${teacherId} - Teacher not found.`,
+                        res.status(500).send({
+                            errorCode:'500-001',
+                            errorMessage:`Server Error`,
+                            errorDetails:`${requestorid} - Internal Server Error.`,
                             callId:uuid(),
                             requestUserId:`${requestorid}`,
                             apiVersion:`${apiVersion}`,

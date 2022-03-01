@@ -1,6 +1,7 @@
 
 const express = require('express');
 const cookieParser = require('cookie-parser');
+const db = require('./database');
 //Courses APIs
 const courseRoute = require('./routes/course');
 
@@ -10,10 +11,106 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));
 
+//Generate Call ID
+function uuid() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c)=> {
+      var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+}
+
+async function userExists(userID) {
+    query=`SELECT * FROM mydb.users Where UserID=${userID}`;
+    let user = await db.promise().query(query)
+    return await user;
+
+};
+
+async function checkPermission(url,method,userRole) {
+
+    query= `SELECT * FROM mydb.permissions WHERE URL="${url}" AND Method="${method}" AND RoleId=${userRole}`;
+    let permission = await db.promise().query(query)
+    return await permission;
+
+};
 //Logger - Log incoming requests on the console using use middleware.
 app.use((req,res, next)=>{
-    console.log(`${req.method} - ${req.url}`);
-    next();
+    const { requestorid } = req.headers;
+    console.log(`${requestorid} - ${req.method} - ${req.url}`);
+
+    //Check request user
+    userExists(requestorid).then(
+        (result)=> {
+            user = result[0]
+            if(user.length>0){
+                lowercase = req.url.toLowerCase().trim()
+                index=lowercase.indexOf("?")
+                urlArray = lowercase.slice(0,index)
+                urlArrayFinal = urlArray.split("/")
+                let url=""
+                for (let i = 0; i < 3; i++) {
+                    url += urlArrayFinal[i] + "/";
+                  }
+                // check the permission for the user role
+                checkPermission(url,req.method,user[0].RoleID).then(
+                    (result)=> {
+                        permission = result[0]
+                        if (permission.length>0){
+                            console.log("User has permission")
+                            next();
+                        } else{
+                            res.status(400).send({
+                                errorCode:'400-012',
+                                errorMessage:`Forbidden`,
+                                errorDetails:`${requestorid} - Permission Error.Permission group associated with the requestor not found or Requestor does not have permission to invoke this API.`,
+                                callId:uuid(),
+                                requestUserId:`${requestorid}`,
+                                apiVersion:`${apiVersion}`,
+                                time:new Date()
+                            })
+                        }
+                    },
+                    (error)=> {
+                        console.log('permission error 1')
+                        res.status(500).send({
+                        errorCode:'500-001',
+                        errorMessage:`Server Error`,
+                        errorDetails:`${requestorid} - Internal Server Error.`,
+                        callId:uuid(),
+                        requestUserId:`${requestorid}`,
+                        apiVersion:`${apiVersion}`,
+                        time:new Date()
+                    })}
+                )
+            } else{
+                res.status(400).send({
+                    errorCode:'400-012',
+                    errorMessage:`Forbidden`,
+                    errorDetails:`${requestorid} - Permission Error.Requestor not defined`,
+                    callId:uuid(),
+                    requestUserId:`${requestorid}`,
+                    apiVersion:`${apiVersion}`,
+                    time:new Date()
+                })
+            }
+        },
+        (error)=> {
+            console.log('permission error 2')
+            res.status(500).send({
+                errorCode:'500-001',
+                errorMessage:`Server Error`,
+                errorDetails:`${requestorid} - Internal Server Error.`,
+                callId:uuid(),
+                requestUserId:`${requestorid}`,
+                apiVersion:`${apiVersion}`,
+                time:new Date()
+            })
+        }
+    )
+
+    // Check the user role has permission to invoke API
+
+
 });
 
 const apiVersion = 1;
