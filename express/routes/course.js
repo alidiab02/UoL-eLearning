@@ -320,7 +320,8 @@ router.put('/:id/setstatus',[ check('requestorid').isInt().withMessage('Requesto
             if (isAvailable){
                     var sqlQuery=`UPDATE mydb.courses SET isAvailable = ${isAvailable} WHERE CourseID=${id}`
                     db.query(sqlQuery,(err, result)=> {
-                        if (err) {                                                                           console.log(err)
+                        if (err) {
+                            console.log(err)
                             return res.status(500).json({
                                 errorCode:'500-002',
                                 errorMessage:`Database Connection Error`,
