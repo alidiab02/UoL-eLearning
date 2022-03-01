@@ -33,13 +33,26 @@ async function getUserRole(roleId){
     let role = await db.promise().query(query);
     return await role;
 }
-
+//Get All courses
+async function getAllCourses(query){
+    console.log("getAllCourses")
+    console.log(query)
+    let courses= await db.promise().query(query);
+    return await courses;
+}
+//Get one course
+async function getCourseDetail(query){
+    let course= await db.promise().query(query);
+    return await course;
+}
 
 // Get all courses from the Database
 router.get('/',async (req, res) =>
 {
     const { status,order,limit} = req.query;
     const { requestorid } = req.headers;
+    console.log("Inside course get")
+    console.log(status)
     let statusQuery = ""
     if (status){
         if (!(status==='1' | status==='0' )) {
@@ -74,7 +87,7 @@ router.get('/',async (req, res) =>
             orderQuery = `ORDER BY Title ${order}`
             console.log(orderQuery)
             if (statusQuery === ""){
-                statusQuery = "WHERE " + orderQuery
+                statusQuery =  orderQuery
             } else{
                 statusQuery = statusQuery + " " + orderQuery
             }
@@ -104,15 +117,38 @@ router.get('/',async (req, res) =>
         }
     }
     //get all courses from the database
-    try {
-        sql= `SELECT * FROM mydb.courses ${statusQuery}`
-        console.log(sql)
-        courses = await db.promise().query(sql);
-        res.status(200).send(courses[0]);
+
+    sql= `SELECT * FROM mydb.courses ${statusQuery}`
+
+    getAllCourses(sql).then(
+        (result)=>{
+            courses = result[0]
+            if(courses.length>0){
+                res.status(200).send(courses);
+            }else{
+                res.status(201).send({
+                    errorCode:'200-001',
+                    errorMessage:`No records selected`,
+                    errorDetails:`${statusQuery} - No records selected. Try changing the filter.`,
+                    callId:uuid(),
+                    requestUserId:`${requestorid}`,
+                    apiVersion:`${apiVersion}`,
+                    time:new Date()
+                })
+            }
+        },
+        (error)=>{
+            res.status(500).send({
+                errorCode:'500-001',
+                errorMessage:`Server Error`,
+                errorDetails:`${requestorid} - Internal Server Error.`,
+                callId:uuid(),
+                requestUserId:`${requestorid}`,
+                apiVersion:`${apiVersion}`,
+                time:new Date()
+            })
         }
-    catch (err){
-        console.log(err);
-    }
+    )
   });
 
 // Method to assign a teacher to a course
@@ -179,7 +215,7 @@ router.put('/:id/assignteacher',[ check('requestorid').isInt().withMessage('Requ
                                                         callId:uuid(),
                                                         requestUserId:`${requestorid}`,
                                                         apiVersion:`${apiVersion}`,
-                                                        msg:`${id} - Course ${id} assigned to Teacher ${user[0].Name} successfully.`,
+                                                        msg:`${id} - Course ${id} assigned to Teacher - ${user[0].Name} successfully.`,
                                                         time:new Date()
                                                     });
                                                 }

@@ -27,8 +27,7 @@ async function userExists(userID) {
 };
 
 async function checkPermission(url,method,userRole) {
-
-    query= `SELECT * FROM mydb.permissions WHERE URL="${url}" AND Method="${method}" AND RoleId=${userRole}`;
+    query= `SELECT * FROM mydb.Permissions WHERE URL="${url}" AND Method="${method}" AND RoleId=${userRole}`;
     let permission = await db.promise().query(query)
     return await permission;
 
@@ -45,14 +44,18 @@ app.use((req,res, next)=>{
             if(user.length>0){
                 lowercase = req.url.toLowerCase().trim()
                 index=lowercase.indexOf("?")
-                urlArray = lowercase.slice(0,index)
+                if (index>0){
+                    urlArray = lowercase.slice(0,index)
+                } else {
+                    urlArray = lowercase
+                }
                 urlArrayFinal = urlArray.split("/")
                 let url=""
                 for (let i = 0; i < 3; i++) {
                     url += urlArrayFinal[i] + "/";
                   }
                 // check the permission for the user role
-                checkPermission(url,req.method,user[0].RoleID).then(
+                checkPermission(url.trim(),req.method,user[0].RoleID).then(
                     (result)=> {
                         permission = result[0]
                         if (permission.length>0){
@@ -107,10 +110,7 @@ app.use((req,res, next)=>{
             })
         }
     )
-
     // Check the user role has permission to invoke API
-
-
 });
 
 const apiVersion = 1;
@@ -130,7 +130,7 @@ app.use('/api/courses',courseRoute)
 
 //set environment parameter using terminal command for mac - Export PORT=3003
 const port = process.env.PORT || 3000
-app.listen(port,()=>console.log(`Listening on port ${port}...`));
+app.listen(port,()=>console.log(`Listening on port ${port}`));
 
 
 
