@@ -55,17 +55,19 @@ app.use((req,res, next)=>{
                 } else {
                     urlArray = lowercase
                 }
+                urlArrayFinal=[]
                 urlArrayFinal = urlArray.split("/")
-                let url=""
+                let url="/"
                 for (let i = 0; i < 4; i++) {
-                    url += urlArrayFinal[i] + "/";
+                    if (urlArrayFinal[i]){
+                        url += urlArrayFinal[i] + "/";
+                    }
                   }
                 // check the permission for the user role
                 checkPermission(url.trim(),req.method,user[0].RoleID).then(
                     (result)=> {
                         permission = result[0]
                         if (permission.length>0){
-                            console.log("User has permission")
                             next();
                         } else{
                             res.status(400).send({
@@ -80,7 +82,6 @@ app.use((req,res, next)=>{
                         }
                     },
                     (error)=> {
-                        console.log('permission error 1')
                         res.status(500).send({
                         errorCode:'500-001',
                         errorMessage:`Server Error`,
@@ -104,7 +105,6 @@ app.use((req,res, next)=>{
             }
         },
         (error)=> {
-            console.log('permission error 2')
             res.status(500).send({
                 errorCode:'500-001',
                 errorMessage:`Server Error`,
